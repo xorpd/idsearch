@@ -8,4 +8,8 @@ setup(name='idsearch',
     author_email='xorpd@xorpd.net',
     license='GPLv3',
     packages=['idsearch'],
-    zip_safe=False)
+    zip_safe=False,
+    include_package_data=True)
+
+# include_package_data makes sure that MANIFEST.in files are considered.
+# See: http://python-packaging.readthedocs.io/en/latest/non-code-files.html
