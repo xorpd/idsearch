@@ -111,29 +111,29 @@ def index_idb(sdb_path):
             try:
                 for nf_cref in no_flow_crefs:
                     if not is_line_exists(nf_cref):
-                        logger.warning('Code line: nf_cref = {:x} is nonexistent. '
-                            'line_addr = {:x}'.format(nf_cref,line_addr))
+                        logger.warning('Code line: nf_cref = 0x{:x} is nonexistent. '
+                            'line_addr = 0x{:x}'.format(nf_cref,line_addr))
                         continue 
                     sdbgen.add_xref(XrefTypes.CODE_JUMP,line_addr,nf_cref)
 
                 for f_cref in flow_crefs:
                     if not is_line_exists(f_cref):
-                        logger.warning('Code line: f_cref = {:x} is nonexistent. '
-                            'line_addr = {:x}'.format(f_cref,line_addr))
+                        logger.warning('Code line: f_cref = 0x{:x} is nonexistent. '
+                            'line_addr = 0x{:x}'.format(f_cref,line_addr))
                         continue
                     sdbgen.add_xref(XrefTypes.CODE_FLOW,line_addr,f_cref)
 
                 # Code to Data xrefs:
                 for dref in idautils.DataRefsFrom(line_addr):
                     if not is_line_exists(dref):
-                        logger.warning('Code line: dref = {:x} is nonexistent. '
-                            'line_addr = {:x}'.format(dref,line_addr))
+                        logger.warning('Code line: dref = 0x{:x} is nonexistent. '
+                            'line_addr = 0x{:x}'.format(dref,line_addr))
                         continue
                     sdbgen.add_xref(XrefTypes.CODE_TO_DATA,line_addr,dref)
             except:
-                logger.warning('line_addr = {:x}'.format(line_addr))
+                logger.warning('line_addr = 0x{:x}'.format(line_addr))
                 logger.warning('type(dref) = {}'.format(type(dref)))
-                logger.warning('dref = {:x}'.format(dref))
+                logger.warning('dref = 0x{:x}'.format(dref))
                 raise
 
         else:
@@ -142,7 +142,7 @@ def index_idb(sdb_path):
                 for dref in idautils.DataRefsFrom(line_addr):
                     if not is_line_exists(dref):
                         logger.warning('Data line: dref = {:x} is nonexistent. '
-                            'line_addr = {:x}'.format(dref,line_addr))
+                            'line_addr = 0x{:x}'.format(dref,line_addr))
                         continue
 
                     if is_line_code(dref):
@@ -150,9 +150,9 @@ def index_idb(sdb_path):
                     else:
                         sdbgen.add_xref(XrefTypes.DATA_TO_DATA,line_addr,dref)
             except:
-                logger.warning('line_addr = {:x}'.format(line_addr))
+                logger.warning('line_addr = 0x{:x}'.format(line_addr))
                 logger.warning('type(dref) = {}'.format(type(dref)))
-                logger.warning('dref = {:x}'.format(dref))
+                logger.warning('dref = 0x{:x}'.format(dref))
                 raise
 
     sdbgen.commit_transaction()
@@ -162,7 +162,7 @@ def index_idb(sdb_path):
     for func_addr in idautils.Functions():
         # We skip chunked functions:
         if is_func_chunked(func_addr):
-            logger.warning('Function at {:x} is chunked'.format(func_addr))
+            logger.warning('Function at 0x{:x} is chunked'.format(func_addr))
             continue
 
         func_end = idc.GetFunctionAttr(func_addr,idc.FUNCATTR_END)
