@@ -1,9 +1,19 @@
+"""
+Standalone indexer (Works from outside IDA).
+Run as follows:
+
+idaq.exe -A -S"...\path\to\standalone_index.py" "<idb_path>"
+
+This will create an index for the IDB at <idb_path>.sdb
+"""
+
 import logging
 import os
 import idc
 from idsearch.idb_util import gen_sdb
 
 logger = logging.getLogger('idsearch')
+
 
 
 def gen_logfile_path(idb_path):
