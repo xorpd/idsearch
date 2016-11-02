@@ -54,6 +54,26 @@ def is_func_chunked(func_addr):
 
     return (num_chunks > 1)
 
+def is_line_code(line_address):
+    """
+    Check if a given line contains code.
+    """
+    # Use a hack of trying to get the mnemonic:
+    return idaapi.ua_mnem(line_address) is not None
+
+def is_line_exists(line_address):
+    """
+    Check if a given address corresponds to a real line.
+    """
+    # Use a hack of trying to check if the line is code.
+    # If we get an exception, this is probably not a real line:
+    try:
+        idaapi.isCode(line_address)
+    except TypeError:
+        return False
+    return True
+
+
 
 def index_idb(sdb_path):
     """
@@ -66,7 +86,7 @@ def index_idb(sdb_path):
     for line_addr in iter_lines():
         # Get line attributes:
         line_type = LineTypes.DATA
-        if idaapi.isCode(line_addr):
+        if is_line_code(line_addr):
             line_type = LineTypes.CODE
 
         line_text = canonicalize_line_text(idc.GetDisasm(line_addr))
@@ -81,27 +101,51 @@ def index_idb(sdb_path):
     sdbgen.begin_transaction()
     # Index all xrefs:
     for line_addr in iter_lines():
-        if idaapi.isCode(line_addr):
+        if is_line_code(line_addr):
             # Line is code:
             # Code xrefs:
             no_flow_crefs = set(idautils.CodeRefsFrom(line_addr,0))
             all_crefs = set(idautils.CodeRefsFrom(line_addr,1))
             flow_crefs = no_flow_crefs.difference(all_crefs)
 
-            for nf_cref in no_flow_crefs:
-                sdbgen.add_xref(XrefTypes.CODE_JUMP,line_addr,nf_cref)
+            try:
+                for nf_cref in no_flow_crefs:
+                    if not is_line_exists(nf_cref):
+                        logger.warning('Code line: nf_cref = {:x} is nonexistent. '
+                            'line_addr = {:x}'.format(nf_cref,line_addr))
+                        continue 
+                    sdbgen.add_xref(XrefTypes.CODE_JUMP,line_addr,nf_cref)
 
-            for f_cref in flow_crefs:
-                sdbgen.add_xref(XrefTypes.CODE_FLOW,line_addr,f_cref)
+                for f_cref in flow_crefs:
+                    if not is_line_exists(f_cref):
+                        logger.warning('Code line: f_cref = {:x} is nonexistent. '
+                            'line_addr = {:x}'.format(f_cref,line_addr))
+                        continue
+                    sdbgen.add_xref(XrefTypes.CODE_FLOW,line_addr,f_cref)
 
-            # Code to Data xrefs:
-            for dref in idautils.DataRefsFrom(line_addr):
-                sdbgen.add_xref(XrefTypes.CODE_TO_DATA,line_addr,dref)
+                # Code to Data xrefs:
+                for dref in idautils.DataRefsFrom(line_addr):
+                    if not is_line_exists(dref):
+                        logger.warning('Code line: dref = {:x} is nonexistent. '
+                            'line_addr = {:x}'.format(dref,line_addr))
+                        continue
+                    sdbgen.add_xref(XrefTypes.CODE_TO_DATA,line_addr,dref)
+            except:
+                logger.warning('line_addr = {:x}'.format(line_addr))
+                logger.warning('type(dref) = {}'.format(type(dref)))
+                logger.warning('dref = {:x}'.format(dref))
+                raise
+
         else:
             # Line is data (Not code):
             try:
                 for dref in idautils.DataRefsFrom(line_addr):
-                    if idaapi.isCode(dref):
+                    if not is_line_exists(dref):
+                        logger.warning('Data line: dref = {:x} is nonexistent. '
+                            'line_addr = {:x}'.format(dref,line_addr))
+                        continue
+
+                    if is_line_code(dref):
                         sdbgen.add_xref(XrefTypes.DATA_TO_CODE,line_addr,dref)
                     else:
                         sdbgen.add_xref(XrefTypes.DATA_TO_DATA,line_addr,dref)
