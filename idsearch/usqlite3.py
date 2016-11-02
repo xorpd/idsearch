@@ -6,6 +6,7 @@ import tempfile
 import zipfile
 
 from .exceptions import SetupError
+from .module_loader import load_dynamic
 
 SQLITE_ZIP_URL = "https://sqlite.org/2016/sqlite-dll-win32-x86-3150000.zip"
 
@@ -75,7 +76,7 @@ if assets_dir not in sys.path:
     if assets_path not in sys.path:
         sys.path.append(assets_path)
 
-import sqlite3
+sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
 
 if not is_fts4_supported(sqlite3):
     raise SetupError('Could not get sqlite3 with fts4 support!')
