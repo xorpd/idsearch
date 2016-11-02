@@ -1,7 +1,3 @@
-
-- Installing sqlite3 with support for fts4 on windows.
-	- Why doesn't it come with support on new python versions?
-
 - Somehow document:
 	>idaq.exe -A -S"C:\projects\idsearch\standalone_index.py" "<idb_path>"
 	For testing indexing against a real IDB inside IDA.
