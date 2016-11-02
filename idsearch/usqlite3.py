@@ -5,6 +5,8 @@ import urllib
 import tempfile
 import zipfile
 
+from .exceptions import SetupError
+
 SQLITE_ZIP_URL = "https://sqlite.org/2016/sqlite-dll-win32-x86-3150000.zip"
 
 # Directory that this file sits in:
@@ -39,7 +41,8 @@ def download_sqlite3_dll():
     temp_dir = tempfile.mkdtemp()
     zip_path = os.path.join(temp_dir,'sqlite3.zip')
     urllib.urlretrieve(SQLITE_ZIP_URL,zip_path)
-    extracted_dir = os.makedirs(temp_dir,'extracted')
+    extracted_dir = os.path.join(temp_dir,'extracted')
+    os.makedirs(extracted_dir)
     zipfile.ZipFile(zip_path).extractall(extracted_dir)
 
     shutil.copyfile(os.path.join(extracted_dir,'sqlite3.dll'),
@@ -47,12 +50,32 @@ def download_sqlite3_dll():
 
     shutil.rmtree(temp_dir)
 
+def is_fts4_supported(sqlite_module):
+    """
+    Check if fts4 is supported.
+    """
+    conn = sqlite_module.connect(':memory:')
+    try:
+        try:
+            conn.execute("""CREATE VIRTUAL TABLE test_table USING fts4(
+                    col_a, col_b)""")
+        except sqlite_module.OperationalError:
+            return False
+
+        return True
+    finally:
+        conn.close()
+
 
 if assets_dir not in sys.path:
     copy_sqlite3_pyd()
     download_sqlite3_dll()
     # Add the assets directory to path:
-    sys.path.append(os.path.join(current_path,'assets'))
-
+    assets_path = os.path.join(current_path,'assets')
+    if assets_path not in sys.path:
+        sys.path.append(assets_path)
 
 import sqlite3
+
+if not is_fts4_supported(sqlite3):
+    raise SetupError('Could not get sqlite3 with fts4 support!')
