@@ -17,14 +17,13 @@ assets_dir = os.path.join(current_path,'assets')
 
 def copy_sqlite3_pyd():
     """
-    Copy _sqlite3.pyd from python dlls dir into assets dir (If not there
-    already).
+    Copy _sqlite3.pyd from python dlls dir into assets dir
     """
     python_dir = os.path.dirname(sys.executable)
     sqlite3_pyd_dest_path = os.path.join(assets_dir,'_sqlite3.pyd')
+    # If the file already exists, we remove it:
     if os.path.isfile(sqlite3_pyd_dest_path):
-        # Already exists. We don't copy
-        return
+        os.remove(sqlite3_pyd_dest_path)
 
     sqlite3_pyd_path = os.path.join(python_dir,'DLLs','_sqlite3.pyd')
     shutil.copyfile(sqlite3_pyd_path,sqlite3_pyd_dest_path)
