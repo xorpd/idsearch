@@ -23,6 +23,8 @@ SQLITE_ZIP_URL = "https://sqlite.org/2016/sqlite-dll-win32-x86-3150000.zip"
 
 # Directory that this file sits in:
 current_path = os.path.dirname(os.path.abspath(__file__))
+
+# Directory of assets:
 assets_dir = os.path.join(current_path,'assets')
 
 def find_dlls_dir():
@@ -90,6 +92,10 @@ def is_fts4_supported(sqlite_module):
         return True
     finally:
         conn.close()
+
+# Make sure that the assets_dir exists:
+if not os.path.exists(assets_dir):
+    os.makedirs(assets_dir)
 
 try:
     # Try to load first:
