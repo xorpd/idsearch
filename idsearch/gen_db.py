@@ -1,6 +1,6 @@
 import logging
 import os
-import sqlite3
+from .usqlite3 import sqlite3
 from .exceptions import GenDBError
 from .types import XrefTypes, LineTypes, data_to_hex, hex_to_data
 

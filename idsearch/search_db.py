@@ -1,5 +1,5 @@
 import os
-import sqlite3
+from .usqlite3 import sqlite3
 from .exceptions import SearchDBError
 from .types import hex_to_data, data_to_hex
 
