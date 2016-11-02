@@ -99,11 +99,18 @@ def index_idb(sdb_path):
                 sdbgen.add_xref(XrefTypes.CODE_TO_DATA,line_addr,dref)
         else:
             # Line is data (Not code):
-            for dref in idautils.DataRefsFrom(line_addr):
-                if idaapi.isCode(dref):
-                    sdbgen.add_xref(XrefTypes.DATA_TO_CODE,line_addr,dref)
-                else:
-                    sdbgen.add_xref(XrefTypes.DATA_TO_DATA,line_addr,dref)
+            try:
+                for dref in idautils.DataRefsFrom(line_addr):
+                    if idaapi.isCode(dref):
+                        sdbgen.add_xref(XrefTypes.DATA_TO_CODE,line_addr,dref)
+                    else:
+                        sdbgen.add_xref(XrefTypes.DATA_TO_DATA,line_addr,dref)
+            except:
+                logger.warning('line_addr = {:x}'.format(line_addr))
+                logger.warning('type(dref) = {}'.format(type(dref)))
+                logger.warning('dref = {:x}'.format(dref))
+                raise
+
     sdbgen.commit_transaction()
 
     sdbgen.begin_transaction()
