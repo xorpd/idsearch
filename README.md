@@ -1,6 +1,7 @@
 # IDSearch
 
 Search IDA databases like a boss.
+
 Works using python2.7 and sqlite3 fts4 indexing.
 
 ## Basic Usage
