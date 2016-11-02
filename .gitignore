@@ -1,4 +1,7 @@
 *.pyc
 *.sw*
-install_assets
+install_assets/
 idsearch/assets
+dist/
+build/
+*.egg-info/
