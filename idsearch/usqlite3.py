@@ -1,3 +1,13 @@
+"""
+Updated sqlite3 module.
+We can't use the sqlite3 module that comes together with python by default,
+because it is outdated and does not support fts tables.
+Therefore we have to download a newer sqlite3.dll and use it.
+
+In order to use a newer sqlite3.dll we also need to copy _sqlite3.pyd from the
+DLLs python dir.
+"""
+
 import sys
 import os
 import shutil
@@ -7,6 +17,7 @@ import zipfile
 
 from .exceptions import SetupError
 from .module_loader import load_dynamic
+
 
 SQLITE_ZIP_URL = "https://sqlite.org/2016/sqlite-dll-win32-x86-3150000.zip"
 
