@@ -91,16 +91,14 @@ def is_fts4_supported(sqlite_module):
     finally:
         conn.close()
 
-
-if assets_dir not in sys.path:
+try:
+    # Try to load first:
+    sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
+except ImportError:
     copy_sqlite3_pyd()
     download_sqlite3_dll()
-    # Add the assets directory to path:
-    assets_path = os.path.join(current_path,'assets')
-    if assets_path not in sys.path:
-        sys.path.append(assets_path)
+    sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
 
-sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
 
 if not is_fts4_supported(sqlite3):
     raise SetupError('Could not get sqlite3 with fts4 support!')
