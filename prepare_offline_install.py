@@ -2,7 +2,7 @@ import sys
 import os
 import urllib
 
-EZ_SETUP_URL = https://bootstrap.pypa.io/ez_setup.py
+EZ_SETUP_URL = "https://bootstrap.pypa.io/ez_setup.py"
 
 # Path of current directory:
 current_path = os.path.dirname(os.path.abspath(__file__))
