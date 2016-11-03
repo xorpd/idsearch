@@ -44,7 +44,7 @@ class SearchDB(object):
         Return all lines
         """
         rows = self._conn.execute("""SELECT address,type,line_text_hex,
-            line_data_hex FROM lines""").fetchall()
+            line_data_hex FROM lines""")
 
         return self._iter_proxy(
                 (Line(row[0],row[1],hex_to_data(row[2]),hex_to_data(row[3])) 
@@ -54,8 +54,7 @@ class SearchDB(object):
         """
         Return all functions
         """
-        rows = self._conn.execute("""SELECT address,name FROM funcs""")\
-                .fetchall()
+        rows = self._conn.execute("""SELECT address,name FROM funcs""")
         return self._iter_proxy((Function(row[0],row[1]) for row in rows))
 
     def all_xrefs(self):
@@ -63,7 +62,7 @@ class SearchDB(object):
         Return all xrefs
         """
         rows = self._conn.execute(
-                'SELECT xref_type, line_from, line_to FROM xrefs ').fetchall()
+                'SELECT xref_type, line_from, line_to FROM xrefs ')
 
         return self._iter_proxy((Xref(row[0],row[1],row[2]) for row in rows))
 
@@ -74,7 +73,7 @@ class SearchDB(object):
         """
         rows = self._conn.execute(
                 'SELECT xref_type, line_from, line_to FROM xrefs '
-                'WHERE line_to = ?', (line_to,)).fetchall()
+                'WHERE line_to = ?', (line_to,))
 
         return self._iter_proxy((Xref(row[0],row[1],row[2]) for row in rows))
 
@@ -84,7 +83,7 @@ class SearchDB(object):
         """
         rows = self._conn.execute(
                 'SELECT xref_type, line_from, line_to FROM xrefs '
-                'WHERE line_from = ?', (line_from,)).fetchall()
+                'WHERE line_from = ?', (line_from,))
 
         return self._iter_proxy((Xref(row[0],row[1],row[2]) for row in rows))
 
@@ -111,7 +110,7 @@ class SearchDB(object):
         rows = self._conn.execute("""SELECT address,type,line_text_hex,line_data_hex 
             FROM lines INNER JOIN  funcs_lines ON 
             lines.address = funcs_lines.line WHERE funcs_lines.func = ?""",
-            (func_addr,)).fetchall()
+            (func_addr,))
 
         return self._iter_proxy(
                 (Line(row[0],row[1],hex_to_data(row[2]),hex_to_data(row[3]))
@@ -126,7 +125,7 @@ class SearchDB(object):
             FROM funcs INNER JOIN  funcs_lines ON 
             funcs.address = funcs_lines.func 
             WHERE funcs_lines.line = ?""",
-            (line_address,)).fetchall()
+            (line_address,))
 
         return self._iter_proxy((Function(row[0],row[1]) for row in rows))
 
@@ -138,7 +137,7 @@ class SearchDB(object):
         rows = self._conn.execute("""SELECT address,type,line_text_hex,
             line_data_hex FROM lines WHERE address IN 
             (SELECT rowid from lines_text_fts WHERE lines_text_fts MATCH ?)""",
-            (match_query,)).fetchall()
+            (match_query,))
 
         return self._iter_proxy(
                 (Line(row[0],row[1],hex_to_data(row[2]),hex_to_data(row[3])) 
@@ -153,7 +152,7 @@ class SearchDB(object):
             line_data_hex FROM lines WHERE address IN 
             (SELECT rowid from lines_text_tokens_fts 
             WHERE lines_text_tokens_fts MATCH ?)""",
-            (match_query,)).fetchall()
+            (match_query,))
 
         return self._iter_proxy(
                 (Line(row[0],row[1],hex_to_data(row[2]),hex_to_data(row[3])) 
@@ -167,7 +166,7 @@ class SearchDB(object):
         rows = self._conn.execute("""SELECT address,type,line_text_hex,
             line_data_hex FROM lines WHERE address IN 
             (SELECT rowid from lines_data_fts WHERE lines_data_fts MATCH ?)""",
-            (match_query,)).fetchall()
+            (match_query,))
 
         return self._iter_proxy(
             (Line(row[0],row[1],hex_to_data(row[2]),hex_to_data(row[3])) 
@@ -209,7 +208,7 @@ class SearchDB(object):
         """
         rows = self._conn.execute("""SELECT address,type,line_text_hex,
             line_data_hex FROM lines WHERE address >= ? AND address <= ?""",
-            (start_address,end_address,)).fetchall()
+            (start_address,end_address,))
 
         return self._iter_proxy(
             (Line(row[0],row[1],hex_to_data(row[2]),hex_to_data(row[3])) 
