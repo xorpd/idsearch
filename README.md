@@ -235,5 +235,3 @@ c:\projects\idsearch> python -m unittest discover
 If `c:\projects\idsearch` is where IDSearch is installed.
 
 
-## Requirements
-
