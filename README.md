@@ -9,6 +9,12 @@ Disassembler)](https://www.hex-rays.com/index.shtml). It allows searching text
 and data quickly in big databases. It also allows combination of various search
 conditions using functional based syntax.
 
+Requirements for your system:
+- IDA >= 6.6
+- Python >= 2.7
+- Tested only on Windows >= 7. Might work on Linux, if your sqlite is new
+  enough to support fts4. (On windows it is downloaded automatically if current
+  version is too old).
 
 ## How it works?
 
