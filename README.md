@@ -105,7 +105,7 @@ sensitive text searches, or exact text searches. For example, the text above
 will not find Mozilla in a line that contains the string 'HiMozilla'. It will
 find it inside the lines 'Hi,Mozilla' and 'Hi Mozilla'.
 
-Note that `sdb.lines_text_tokens` is lazy. It returns a generator of line
+Note that `sdb.lines_text_tokens` is lazy. It returns a iterator of line
 objects:
 ```python
 Python>sdb.lines_text_tokens('Mozilla')
@@ -265,7 +265,7 @@ Getting all functions:
 functions = sdb.all_functions()
 ```
 
-Note that all the resulting lines, xrefs and functions are generators. They are
+Note that all the resulting lines, xrefs and functions are iterators. They are
 lazily evaluated.
 
 Example for counting the amount of lines in the index:
@@ -277,7 +277,71 @@ Python>sum(1 for _ in sdb.all_lines())
 
 #### Functional searches
 
-TODO
+The iterators being returned from calls to `sdb`'s methods are "improved".
+They were given a few extra methods to allow combining search conditions in a
+functional manner.
+
+As an example, assume that you want to find all the lines with the immediate
+100h that have the 'rdx' register mentioned, and that have address with
+remainder 2 modulo 9. You can run the following query:
+
+```python
+Python>print_lines(sdb.lines_text_tokens('100h').filter(lambda l:('rdx' in l.text) and (l.address % 9) == 2))
+0x0041baf3 : 48ba0001000000000000 | mov rdx, 100h                           
+0x004a7be1 : 488d9500ffffff       | lea rdx, [rbp-100h]                     
+0x005a607a : ff9200010000         | call qword ptr [rdx+100h]               
+0x006e6b0a : 488b8a00010000       | mov rcx, [rdx+100h]                     
+0x0076815b : 488b9000010000       | mov rdx, [rax+100h]                     
+0x0078821c : 48898200010000       | mov [rdx+100h], rax                     
+0x00788369 : 48898200010000       | mov [rdx+100h], rax                     
+0x007883d5 : 48898200010000       | mov [rdx+100h], rax                     
+0x0078d619 : 488d9500ffffff       | lea rdx, [rbp-100h]                     
+0x007a76e9 : 488d9000010000       | lea rdx, [rax+100h]                     
+0x007b2fa8 : 8a941000010000       | mov dl, [rax+rdx+100h]                  
+0x00933968 : 4c8b8200010000       | mov r8, [rdx+100h]                      
+0x00950f84 : 488b9300010000       | mov rdx, [rbx+100h]       
+```
+
+Note that the inner expression (Without the `print_lines` call) is an iterator.
+It is evaluated lazily: This means that it is only calculated at the point when
+we want to print it:
+
+```python
+sdb.lines_text_tokens('100h').filter(lambda l:('rdx' in l.text) and (l.address % 9) == 2)
+<idsearch.func_iter.FuncIter object at 0x05A2BA90>
+```
+
+The additional methods that are supplied to each iterator returned from the sdb
+methods are:
+
+-   `map(func)`: Creates a new iterator where every original element x is mapped
+    to func(x).
+
+-   `filter(func)`: Creates a new iterator where an element x shows up only if
+    func(x) == True. Otherwise it is discarded.
+
+-   `unique(key)`: Creates a new iterator where an element x shows up only if
+    key(x) does not equal to key(y) for some earlier element y.
+
+-   `all(func)`: Returns True if func(x) is True for all elements x. Returns
+    False otherwise.
+
+-   `any(func)`: Returns True if func(x) is True for any element x. Returns
+    False otherwise.
+
+
+Example: Find all the lines that contain 'call rax' and have 'rcx' mentioned on
+the line above them:
+
+```python
+Python>print_lines(sdb.lines_text('call rax').filter(lambda l:sdb.lines_above(l.address,0x4).any(lambda l:'rcx' in l.text)))
+0x004aef78 : 48ffd0 | call rax                                
+0x004af0f2 : 48ffd0 | call rax                                
+0x0063e275 : 48ffd0 | call rax                                
+0x007acb4a : 48ffd0 | call rax                                
+0x007bfc40 : 48ffd0 | call rax                                
+0x0094f0fa : 48ffd0 | call rax                                
+```
 
 
 ### From outside IDA
