@@ -21,7 +21,7 @@ Requirements for your system:
 IDSearch Works using python2.7 and [sqlite](https://sqlite.org/)
 [fts4](https://www.sqlite.org/fts3.html) indexing.
 
-IDSearch works in two steps: If first indexes your IDB (IDA database file) and
+IDSearch works in two steps: It first indexes your IDB (IDA database file) and
 creates an optimized database called sdb (Search database). Any further queries
 are performed against the optimized sdb.
 
