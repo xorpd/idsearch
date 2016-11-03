@@ -1,25 +1,9 @@
 import os
 from .usqlite3 import sqlite3
 from .exceptions import SearchDBError
-from .types import hex_to_data, data_to_hex
+from .types import hex_to_data, data_to_hex,\
+    Xref, Line, Function
 
-class Xref(object):
-    def __init__(self,xref_type,line_from,line_to):
-        self.xref_type = xref_type
-        self.line_from = line_from
-        self.line_to = line_to
-
-class Line(object):
-    def __init__(self,address,line_type,text,data):
-        self.address = address
-        self.line_type = line_type
-        self.text = text
-        self.data = data
-
-class Function(object):
-    def __init__(self,address,name):
-        self.address = address
-        self.name = name
 
 def ident_iter_proxy(input_iter):
     """
