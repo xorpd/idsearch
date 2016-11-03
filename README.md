@@ -151,13 +151,13 @@ The relevant methods are:
 - `sdb.lines_in_range(start_address, end_address)`: Find all lines with address
   in the given range.
 
-- `sdb.lines_above(line_address_dist)`: Find all the lines with address in
+- `sdb.lines_above(line_address,dist)`: Find all the lines with address in
   range `line_address` to `line_address + dist`, inclusive.
 
-- `sdb.lines_below(line_address_dist)`: Find all the lines with address in
+- `sdb.lines_below(line_address,dist)`: Find all the lines with address in
   range `line_address - dist` to `line_address`, inclusive.
 
-- `sdb.lines_around(line_address_dist)`: Find all the lines with address in
+- `sdb.lines_around(line_address,dist)`: Find all the lines with address in
   range `line_address - dist` to `line_address + dist`, inclusive.
 
 Example:
