@@ -2,7 +2,23 @@
 
 Search IDA databases like a boss.
 
-Works using python2.7 and sqlite3 fts4 indexing.
+## What is IDSearch?
+
+IDSearch is a pythonic search tool for [IDA (Interactive
+Disassembler)](https://www.hex-rays.com/index.shtml). It allows searching text
+and data quickly in big databases. It also allows combination of various search
+conditions using functional based syntax.
+
+
+## How it works?
+
+IDSearch Works using python2.7 and [sqlite](https://sqlite.org/)
+[fts4](https://www.sqlite.org/fts3.html) indexing.
+
+IDSearch works in two steps: If first indexes your IDB (IDA database file) and
+creates an optimized database called sdb (Search database). Any further queries
+are performed against the optimized sdb.
+
 
 ## Basic Usage
 ### From inside IDA
@@ -19,21 +35,17 @@ shell. Below are some examples.
 
 #### Find text tokens
 
-Find the token Mozilla inside the IDB:
+Find the token 'Mozilla' inside the IDB:
 
-```
+```python
 Python>sdb = load_this_sdb()
 Python>print_lines(sdb.lines_text_tokens('Mozilla'))
 0x0093984d : 488d1584082000 | lea rdx, aUserAgentMoz_0; "\r\nUser ... 
 0x0094d579 : 488d1528f01e00 | lea rdx, aUserAgentMozil; "\r\nUser ... 
 ```
 
-Some rough timing:
-```
-Python>start = time.time(); l = list(sdb.lines_text_tokens('Mozilla')) ; print(time.time() - start)
-0.0
-```
-For comparison, the time of search using IDA's text search (Alt + T): 46 seconds.
+The results are obtained immediately.  
+For comparison, the time of search using IDA's text search (Alt + T) is 46 seconds on my machine.
 
 The text tokens search is very fast, hoever it does not allow to perform case
 sensitive text searches, or exact text searches. For example, the text above
@@ -42,14 +54,14 @@ find it inside the lines 'Hi,Mozilla' and 'Hi Mozilla'.
 
 Note that `sdb.lines_text_tokens` is lazy. It returns a generator of line
 objects:
-```
+```python
 Python>sdb.lines_text_tokens('Mozilla')
 <idsearch.func_iter.FuncIter object at 0x0597B4F0>
 ```
 
 A line object contains some information about the found line:
 
-```
+```python
 Python>lines = list(sdb.lines_text_tokens('Mozilla'))
 Python>lines[0]
 <idsearch.search_db.Line object at 0x0597B110>
@@ -71,7 +83,7 @@ Finding exact text is a bit slower than text tokens search, but only a bit. It
 is useful for finding exact text inside lines in your IDB. It it case
 sensitive. Example:
 
-```
+```python
 Python>print_lines(sdb.lines_text('User-Agent'))
 0x0093984d : 488d1584082000 | lea rdx, aUserAgentMoz_0; "\r\nUser ... 
 0x0094d51d : 488d155cf01e00 | lea rdx, aUserAgent ; "\r\nUser-Agent: "
@@ -80,11 +92,11 @@ Python>print_lines(sdb.lines_text('User-Agent'))
 
 and:
 
-```
+```python
 Python>print_lines(sdb.lines_text('user-Agent'))
 ```
 
-No results this time.
+Note that this time no search results were found.
 
 #### Finding exact data
 
