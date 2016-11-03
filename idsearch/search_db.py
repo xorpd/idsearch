@@ -202,14 +202,14 @@ class SearchDB(object):
         """
         Get amount lines above line (Including the line itself)
         """
-        return self.lines_in_range(line_address, line_address + dist)
+        return self.lines_in_range(line_address - dist, line_address)
 
 
     def lines_below(self,line_address,dist):
         """
         Get amount lines below line (Including the line itself)
         """
-        return self.lines_in_range(line_address - dist, line_address)
+        return self.lines_in_range(line_address, line_address + dist)
 
     def lines_around(self,line_address,dist):
         """
