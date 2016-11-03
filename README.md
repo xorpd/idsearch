@@ -16,7 +16,7 @@ Requirements for your system:
   enough to support fts4. (On windows it is downloaded automatically if current
   version is too old).
 
-## How it works?
+## How does it work?
 
 IDSearch Works using python2.7 and [sqlite](https://sqlite.org/)
 [fts4](https://www.sqlite.org/fts3.html) indexing.
