@@ -141,16 +141,61 @@ Getting all functions:
 functions = sdb.all_functions()
 ```
 
-Note that all 
+Note that all the resulting lines, xrefs and functions are generators. They are
+lazily evaluated.
 
+Example for counting the amount of lines in the index:
 
+```python
+Python>sum(1 for _ in sdb.all_lines())
+1398021
+```
 
+#### Lines
 
-TODO
+Lines are the most basic component of the indexing mechanism. A line
+corresponds to one line in your IDB. It contains the attributes:
+
+-   `address`: The address of the line. No two lines has the same address.
+
+-   `line_type`: Code or Data.
+
+-   `text`: The text that can be seen on the line (Not including the address
+      and the bytes).
+
+-   `data`: The data bytes that corresponds to the line in IDA. 
+    TODO: Talk about emtpy data?
+        
 
 #### Xrefs
 
-TODO
+Xrefs are connections between lines. The supported xref types are (Taken from
+types.py):
+
+```python
+class XrefTypes(object):
+    CODE_FLOW = 0
+    CODE_JUMP = 1
+    CODE_TO_DATA = 2
+    DATA_TO_DATA = 3
+    DATA_TO_CODE = 4
+```
+
+The method `sdb.xrefs_to` allows to find all xrefs to a given line address.
+
+```python
+Python>xrefs = list(sdb.xrefs_to(0x9399f9))
+Python>xrefs
+[<idsearch.search_db.Xref object at 0x04C5B210>, <idsearch.search_db.Xref object at 0x04C5B490>]
+Python>hex(xrefs[0].line_from)
+0x939592
+Python>hex(xrefs[0].line_to)
+0x9399f9
+```
+
+The method `sdb.xrefs_from` works similarly, and allows to find all xrefs from
+a given line address to other lines.
+
 
 #### Function and Line translation
 
