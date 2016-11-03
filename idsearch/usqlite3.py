@@ -93,18 +93,32 @@ def is_fts4_supported(sqlite_module):
     finally:
         conn.close()
 
-# Make sure that the assets_dir exists:
-if not os.path.exists(assets_dir):
-    os.makedirs(assets_dir)
 
-try:
-    # Try to load first:
-    sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
-except ImportError:
-    copy_sqlite3_pyd()
-    download_sqlite3_dll()
-    sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
+def load_sqlite3():
+    """
+    Load an sqlite3 module that supports fts4, and return it.
+    """
+    # We don't try to download the dll on posix systems:
+    if os.name == 'posix':
+        import sqlite3 as _native_sqlite3
+        return _native_sqlite3
+
+    # Make sure that the assets_dir exists:
+    if not os.path.exists(assets_dir):
+        os.makedirs(assets_dir)
+
+    try:
+        # Try to load first:
+        my_sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
+    except ImportError:
+        copy_sqlite3_pyd()
+        download_sqlite3_dll()
+        my_sqlite3 = load_dynamic('_sqlite3',os.path.join(assets_dir,'_sqlite3.pyd'))
+
+    if not is_fts4_supported(my_sqlite3):
+        raise SetupError('Could not get sqlite3 with fts4 support!')
 
 
-if not is_fts4_supported(sqlite3):
-    raise SetupError('Could not get sqlite3 with fts4 support!')
+    return my_sqlite3
+
+sqlite3 = load_sqlite3()
