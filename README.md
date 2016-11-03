@@ -100,7 +100,7 @@ Python>print_lines(sdb.lines_text_tokens('Mozilla'))
 The results are obtained immediately.  
 For comparison, the time of search using IDA's text search (Alt + T) is 46 seconds on my machine.
 
-The text tokens search is very fast, hoever it does not allow to perform case
+The text tokens search is very fast, however it does not allow to perform case
 sensitive text searches, or exact text searches. For example, the text above
 will not find Mozilla in a line that contains the string 'HiMozilla'. It will
 find it inside the lines 'Hi,Mozilla' and 'Hi Mozilla'.
