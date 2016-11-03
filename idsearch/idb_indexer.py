@@ -91,6 +91,9 @@ def index_idb(sdb_path):
 
         line_text = canonicalize_line_text(idc.GetDisasm(line_addr))
         line_data = idc.GetManyBytes(line_addr,idc.ItemSize(line_addr))
+        # Make sure that we don't insert Nones:
+        if line_data is None:
+            line_data = ""
 
         # Index the line:
         sdbgen.add_line(line_addr,line_type,line_text,line_data)

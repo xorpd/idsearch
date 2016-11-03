@@ -37,18 +37,12 @@ def data_to_hex(data):
     """
     Convert data to space separated hex bytes.
     """
-    if data is None:
-        return None
-
     return " ".join(map(lambda c:c.encode('hex').lower(),data))
 
 def hex_to_data(data_hex):
     """
     Convert space separated hex bytes to data.
     """
-    if data_hex is None:
-        return None
-
     return ''.join(
         map(lambda chex:chex.decode('hex'),data_hex.split(' '))
     )

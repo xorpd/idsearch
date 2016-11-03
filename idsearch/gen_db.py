@@ -72,7 +72,7 @@ class SDBGen(object):
             address INTEGER PRIMARY KEY,
             type REFERENCES line_types(id),
             line_text_hex TEXT NOT NULL,
-            line_data_hex TEXT)""")
+            line_data_hex TEXT NOT NULL)""")
 
         # Create External content table:
         # See 6.2.2 in sqlite fts3.html documentation.

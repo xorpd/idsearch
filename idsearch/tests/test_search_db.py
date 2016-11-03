@@ -21,7 +21,7 @@ def fill_sdb(sdb_path):
     sdbgen.add_line(0x051FECBC, LineTypes.CODE, 'bctrl','\x4e\x80\x04\x21')
     sdbgen.add_line(0x051FECC0, LineTypes.CODE, 'li r4,-1','\x38\x80\xff\xff')
     sdbgen.add_line(0x051FECC4, LineTypes.CODE, 'li r5,-1','\x38\xA0\xff\xff')
-    sdbgen.add_line(0xFF000000, LineTypes.CODE, 'empty',None)
+    sdbgen.add_line(0xFF000000, LineTypes.CODE, 'empty','')
 
     sdbgen.add_xref(XrefTypes.CODE_FLOW,0x051fecb4,0x051fecb8)
     sdbgen.add_function(0x051fecb4,'my_func',[0x051fecb4,0x051fecb8])

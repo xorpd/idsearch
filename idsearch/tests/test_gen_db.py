@@ -20,7 +20,7 @@ class TestDBGen(unittest.TestCase):
 
     def test_add_line_none_data(self):
         sdbgen = SDBGen(':memory:')
-        sdbgen.add_line(0x051FECB4, LineTypes.CODE,'li r25,0',None)
+        sdbgen.add_line(0x051FECB4, LineTypes.CODE,'db ?','')
         sdbgen.close()
 
     def test_add_line_transaction(self):
