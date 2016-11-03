@@ -207,7 +207,7 @@ sdb.close()
 3.  (Optional step) If you want to install IDSearch as a python module.
     For example, using setuptools:
     ```
-    python install_assets/ez_setup.py
+    python install_assets\ez_setup.py
     python setup.py install
     ```
 
