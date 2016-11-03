@@ -37,14 +37,22 @@ The index is kept as a file in the same path of your IDB file. It should have
 the same name as the IDB, except for the extension: .sdb (Search Data Base).
 
 When the indexing is done, you can start writing some code in IDA's python
-shell. Below are some examples.
+shell. The first thing you will usually do is obtain a handle to the sdb using
+the `load_this_sdb` function:
+
+```python
+Python>sdb = load_this_sdb()
+```
+
+This function opens a connection to the sdb database. It should return
+immediately.
+
 
 #### Find text tokens
 
 Find the token 'Mozilla' inside the IDB:
 
 ```python
-Python>sdb = load_this_sdb()
 Python>print_lines(sdb.lines_text_tokens('Mozilla'))
 0x0093984d : 488d1584082000 | lea rdx, aUserAgentMoz_0; "\r\nUser ... 
 0x0094d579 : 488d1528f01e00 | lea rdx, aUserAgentMozil; "\r\nUser ... 
@@ -115,6 +123,29 @@ Python>print_lines(sdb.lines_data('\x15\x33\x33'))
 
 #### Getting all items
 
+Sometimes one might want to obtain all items of certain type. This is not very
+efficient but sometimes necessary.
+
+Getting all lines:
+```python
+lines = sdb.all_lines()
+```
+
+Getting all xrefs:
+```python
+xrefs = sdb.all_xrefs()
+```
+
+Getting all functions:
+```python
+functions = sdb.all_functions()
+```
+
+Note that all 
+
+
+
+
 TODO
 
 #### Xrefs
@@ -153,7 +184,7 @@ After you have indexed your IDB, assuming that you have idsearch installed for
 your python environment (See installation instructions for info about this),
 you can use the following code to do some searching:
 
-```
+```python
 from idsearch.searcher import load_sdb
 sdb = load_sdb(r'c:\temp\my_project.sdb')
 
@@ -205,7 +236,4 @@ If `c:\projects\idsearch` is where IDSearch is installed.
 
 
 ## Requirements
-
-IDA >= 6.6
-Python >= 2.7
 
