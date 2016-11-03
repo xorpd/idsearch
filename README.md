@@ -47,8 +47,45 @@ Python>sdb = load_this_sdb()
 This function opens a connection to the sdb database. It should return
 immediately.
 
+#### Lines
 
-#### Find text tokens
+Lines are the most basic component of the indexing mechanism. A line
+corresponds to one line in your IDB. It contains the attributes:
+
+-   `address`: The address of the line. No two lines has the same address.
+
+-   `line_type`: Code or Data.
+
+-   `text`: The text that can be seen on the line (Not including the address
+      and the bytes).
+
+-   `data`: The data bytes that corresponds to the line in IDA. 
+    Some lines do not contain any data (For example, lines in an uninitialized
+    data section). In this case `data` will be an empty string.
+
+One can use the `sdb.get_line` method to obtain a line object given a line
+address. As an example, consider this line from IDA:
+
+```
+.text:00000000009399F9      mov     rdx, [rbp+var_8]
+```
+
+This is how we examine the line inside IDSearch:
+
+```python
+Python>line = sdb.get_line(0x9399f9)
+Python>hex(line.address)
+0x9399f9
+Python>line.line_type == LineTypes.CODE
+True
+Python>line.text
+mov rdx, [rbp+var_8]
+Python>line.data.encode('hex')
+488b55f8
+```
+
+
+#### Find lines with text tokens
 
 Find the token 'Mozilla' inside the IDB:
 
@@ -57,6 +94,8 @@ Python>print_lines(sdb.lines_text_tokens('Mozilla'))
 0x0093984d : 488d1584082000 | lea rdx, aUserAgentMoz_0; "\r\nUser ... 
 0x0094d579 : 488d1528f01e00 | lea rdx, aUserAgentMozil; "\r\nUser ... 
 ```
+
+`print_lines` is a function that prints lines nicely from any iterator of lines.
 
 The results are obtained immediately.  
 For comparison, the time of search using IDA's text search (Alt + T) is 46 seconds on my machine.
@@ -73,25 +112,8 @@ Python>sdb.lines_text_tokens('Mozilla')
 <idsearch.func_iter.FuncIter object at 0x0597B4F0>
 ```
 
-A line object contains some information about the found line:
 
-```python
-Python>lines = list(sdb.lines_text_tokens('Mozilla'))
-Python>lines[0]
-<idsearch.search_db.Line object at 0x0597B110>
-Python>hex(lines[0].address)
-0x93984d
-Python>lines[0].text
-lea rdx, aUserAgentMoz_0; "\r\nUser-Agent: Mozilla/4.0 (compatible"...
-Python>lines[0].data.encode('hex')
-488d1584082000
-Python>lines[0].line_type == LineTypes.CODE
-True
-```
-
-`print_lines` is a function that prints lines nicely from any iterator of lines.
-
-#### Finding exact text
+#### Find lines with exact text
 
 Finding exact text is a bit slower than text tokens search, but only a bit. It
 is useful for finding exact text inside lines in your IDB. It it case
@@ -112,7 +134,7 @@ Python>print_lines(sdb.lines_text('user-Agent'))
 
 Note that this time no search results were found.
 
-#### Finding exact data
+#### Find lines with exact data
 
 Finding exact data is done using `sdb.lines_data` as follows:
 
@@ -121,50 +143,36 @@ Python>print_lines(sdb.lines_data('\x15\x33\x33'))
 0x0047854e : 488d1533336800 | lea rdx, unk_AFB888  
 ```
 
-#### Getting all items
+#### Line ranges
 
-Sometimes one might want to obtain all items of certain type. This is not very
-efficient but sometimes necessary.
+It is possible to filter lines based on their addresses.
+The relevant methods are: 
 
-Getting all lines:
-```python
-lines = sdb.all_lines()
-```
+- `sdb.lines_in_range(start_address, end_address)`: Find all lines with address
+  in the given range.
 
-Getting all xrefs:
-```python
-xrefs = sdb.all_xrefs()
-```
+- `sdb.lines_above(line_address_dist)`: Find all the lines with address in
+  range `line_address` to `line_address + dist`, inclusive.
 
-Getting all functions:
-```python
-functions = sdb.all_functions()
-```
+- `sdb.lines_below(line_address_dist)`: Find all the lines with address in
+  range `line_address - dist` to `line_address`, inclusive.
 
-Note that all the resulting lines, xrefs and functions are generators. They are
-lazily evaluated.
+- `sdb.lines_around(line_address_dist)`: Find all the lines with address in
+  range `line_address - dist` to `line_address + dist`, inclusive.
 
-Example for counting the amount of lines in the index:
+Example:
 
 ```python
-Python>sum(1 for _ in sdb.all_lines())
-1398021
+Python>print_lines(sdb.lines_around(0x9399f9,0x16))
+0x009399e3 : e88837b6ff           | call sub_49D170                         
+0x009399e8 : 488b8da0ebffff       | mov rcx, [rbp+var_1460]                 
+0x009399ef : 488b056add2500       | mov rax, cs:qword_B97760                
+0x009399f6 : 48ffd0               | call rax ; qword_B97760                 
+0x009399f9 : 488b55f8             | mov rdx, [rbp+var_8]                    
+0x009399fd : 488d4de0             | lea rcx, [rbp+var_20]                   
+0x00939a01 : 49b80400000000000000 | mov r8, 4                               
+0x00939a0b : e880afacff           | call sub_404990           
 ```
-
-#### Lines
-
-Lines are the most basic component of the indexing mechanism. A line
-corresponds to one line in your IDB. It contains the attributes:
-
--   `address`: The address of the line. No two lines has the same address.
-
--   `line_type`: Code or Data.
-
--   `text`: The text that can be seen on the line (Not including the address
-      and the bytes).
-
--   `data`: The data bytes that corresponds to the line in IDA. 
-    TODO: Talk about emtpy data?
         
 
 #### Xrefs
@@ -199,11 +207,73 @@ a given line address to other lines.
 
 #### Function and Line translation
 
-TODO
+Every function contains some lines, and every line is possibly inside a few
+functions (This relation was chosen to allow possible future support for
+function chunks).
 
-#### Lines around
+It is possible to translate between functions and lines using the methods:
 
-TODO
+- `sdb.lines_in_func(func_addr)`: Returns an iterator of all the lines inside a
+  function.
+
+- `sdb.funcs_by_line(line_address)`: Returns an iterator of all functions that
+  contain the given line. Usually it will be just one function.
+
+Example for printing all the lines in a function given some line in the middle
+of the function:
+
+```python
+Python>func = list(sdb.funcs_by_line(0x939a0b))[0]
+Python>print_lines(sdb.lines_in_func(func.address))
+0x00939210 : 55                   | push rbp                                
+0x00939211 : 4889e5               | mov rbp, rsp                            
+0x00939214 : 4881eca0180000       | sub rsp, 18A0h                          
+0x0093921b : 898424a4080000       | mov [rsp+18A0h+var_FFC], eax            
+0x00939222 : 890424               | mov [rsp+18A0h+var_18A0], eax           
+...
+0x00939c4a : 0fb645e8             | movzx eax, [rbp+var_18]                 
+0x00939c4e : c9                   | leave                                   
+0x00939c4f : c3                   | retn                                    
+```
+
+Above, func is a Function object. It contains the attributes address and name:
+```
+Python>hex(func.address)
+0x939210
+Python>func.name
+sub_939210
+```
+
+
+#### Getting all lines, xrefs, functions
+
+Sometimes one might want to obtain all items of certain type. This is not very
+efficient but sometimes necessary.
+
+Getting all lines:
+```python
+lines = sdb.all_lines()
+```
+
+Getting all xrefs:
+```python
+xrefs = sdb.all_xrefs()
+```
+
+Getting all functions:
+```python
+functions = sdb.all_functions()
+```
+
+Note that all the resulting lines, xrefs and functions are generators. They are
+lazily evaluated.
+
+Example for counting the amount of lines in the index:
+
+```python
+Python>sum(1 for _ in sdb.all_lines())
+1398021
+```
 
 #### Functional searches
 
@@ -279,4 +349,7 @@ c:\projects\idsearch> python -m unittest discover
 
 If `c:\projects\idsearch` is where IDSearch is installed.
 
+## Known limitations
+
+- IDSearch does not deal with chunked functions.
 
