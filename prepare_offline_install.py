@@ -2,6 +2,8 @@ import sys
 import os
 import urllib
 
+from idsearch.obtain_assets import download_sqlite3_dll
+
 EZ_SETUP_URL = "https://bootstrap.pypa.io/ez_setup.py"
 
 # Path of current directory:
@@ -22,7 +24,9 @@ def run():
         # Download if non existent:
         urllib.urlretrieve(EZ_SETUP_URL,ez_setup_path)
 
-    # This should automatically download sqlite3.dll:
+    # Download sqlite3.dll:
+    download_sqlite3_dll()
+
     from idsearch.usqlite3 import sqlite3, is_fts4_supported
     print('Testing operation of sqlite3...')
     if is_fts4_supported(sqlite3):
