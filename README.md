@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/xorpd/idsearch.svg?branch=master)](https://travis-ci.org/xorpd/idsearch)
+
 # IDSearch
 
 Search IDA databases like a boss.
