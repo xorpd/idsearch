@@ -1,10 +1,14 @@
 import logging
 import os
+from functools import wraps
 from .usqlite3 import sqlite3
 from .exceptions import GenDBError
 from .types import XrefTypes, LineTypes, data_to_hex, hex_to_data
 
 logger = logging.getLogger(__name__)
+
+# Amount of operations in one batch.
+BATCH_OPERS = 1024
 
 def get_enum_opts(enum):
     """
@@ -17,10 +21,33 @@ def get_enum_opts(enum):
     return opts
 
 
+def sdb_oper(f):
+    """
+    Decorator for sdb insertion operation.
+    Allows to easily batch insertions for better performance.
+    """
+    @wraps(f)
+    def wrapper(self,*args,**kwargs):
+        f(self,*args,**kwargs)
+        self._pending_opers += 1
+        if self._pending_opers >= self._batch_opers:
+            self._pending_opers = 0
+            self._commit_transaction()
+            self._begin_transaction()
+
+    return wrapper
+
 
 class SDBGen(object):
-    def __init__(self,sdb_path):
+    def __init__(self,sdb_path,batch_opers=BATCH_OPERS):
         self._sdb_path = sdb_path
+        # Amount of pending operations (To be commited)
+        self._pending_opers = 0
+        # Maximum amount of operations in one batch:
+        self._batch_opers = batch_opers
+        # Are we currently inside a transaction?
+        self._inside_transaction = False
+
         if sdb_path != ':memory:':
             if os.path.isfile(sdb_path):
                 raise GenDBError('File already exists. Aborting.')
@@ -30,6 +57,8 @@ class SDBGen(object):
         self._create_enum_tables()
         self._create_main_tables()
         self._create_indexes()
+
+        self._begin_transaction()
 
     def _create_enum_tables(self):
         """
@@ -115,22 +144,32 @@ class SDBGen(object):
             'funcs_lines(line,func)')
 
 
-    def begin_transaction(self):
+    def _begin_transaction(self):
         """
         Begin a transaction.
         """
+        if self._inside_transaction:
+            raise GenDBError('Already inside a transaction!')
+
+        self._inside_transaction = True
         self._conn.execute('BEGIN TRANSACTION')
 
-    def commit_transaction(self):
+    def _commit_transaction(self):
         """
         Commit a transaction
         """
+        if not self._inside_transaction:
+            raise GenDBError('Not inside a transaction!')
+
+        self._inside_transaction = False
+
         try:
             self._conn.execute('COMMIT')
         except sqlite3.Error:
             self._conn.execute('ROLLBACK')
             raise GenDBError('Failed to commit transaction')
 
+    @sdb_oper
     def add_line(self,addr,line_type,line_text,line_data):
         """
         Returns line id
@@ -143,6 +182,7 @@ class SDBGen(object):
             (address,type,line_text_hex,line_data_hex) VALUES
             (?, ?, ?, ?)""",(addr,line_type,line_text_hex,line_data_hex,))
 
+    @sdb_oper
     def add_xref(self,xref_type,line_from,line_to):
         """
         Returns xref id
@@ -150,6 +190,7 @@ class SDBGen(object):
         self._conn.execute("""INSERT INTO xrefs (xref_type,line_from,line_to)
             VALUES (?, ?, ?)""",(xref_type,line_from,line_to,))
 
+    @sdb_oper
     def add_function(self,address,name,line_addresses):
         """
         Add a function. line_addresses are the addresses of all the lines that
@@ -169,6 +210,8 @@ class SDBGen(object):
         Fill in the fts index for the lines table.
         Should be called after no more insertions are expected.
         """
+        self._commit_transaction()
+
         self._conn.execute("""INSERT INTO lines_text_fts(
             rowid,line_text_hex) SELECT 
             address, line_text_hex FROM lines""")
@@ -178,18 +221,21 @@ class SDBGen(object):
 
         # Converting all hexified line text back to the real text, to allow
         # quick token based fts search:
-        self.begin_transaction()
+        self._begin_transaction()
         for row in rows:
             self._conn.execute("""INSERT INTO lines_text_tokens_fts(
                 rowid,line_text) VALUES (?,?)""",(row[0],hex_to_data(row[1])))
-        self.commit_transaction()
+        self._commit_transaction()
 
         self._conn.execute("""INSERT INTO lines_data_fts(
             rowid,line_data_hex) SELECT 
             address, line_data_hex FROM lines""")
 
+        self._begin_transaction()
+
     def close(self):
         """
         Close connection to database.
         """
+        self._commit_transaction()
         self._conn.close()

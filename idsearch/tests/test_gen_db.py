@@ -26,45 +26,37 @@ class TestDBGen(unittest.TestCase):
     def test_add_line_transaction(self):
         sdbgen = SDBGen(':memory:')
 
-        sdbgen.begin_transaction()
         sdbgen.add_line(0x051FECB4, LineTypes.CODE,'li r25,0','\x3B\x20\x00\x00')
         sdbgen.add_line(0x051FECB8, LineTypes.CODE,
                 'addi r24, r1, 0x40+var_28','\x3B\x01\x00\x18')
-        sdbgen.commit_transaction()
         sdbgen.close()
 
     def test_fill_lines_fts(self):
         sdbgen = SDBGen(':memory:')
 
-        sdbgen.begin_transaction()
         sdbgen.add_line(0x051FECB4, LineTypes.CODE,'li r25,0','\x3B\x20\x00\x00')
         sdbgen.add_line(0x051FECB8, LineTypes.CODE,
                 'addi r24, r1, 0x40+var_28','\x3B\x01\x00\x18')
-        sdbgen.commit_transaction()
         sdbgen.fill_lines_fts()
         sdbgen.close()
 
     def test_add_xref(self):
         sdbgen = SDBGen(':memory:')
 
-        sdbgen.begin_transaction()
         sdbgen.add_line(0x051FECB4, LineTypes.CODE,'li r25,0','\x3B\x20\x00\x00')
         sdbgen.add_line(0x051FECB8, LineTypes.CODE,
                 'addi r24, r1, 0x40+var_28','\x3B\x01\x00\x18')
         sdbgen.add_xref(XrefTypes.CODE_FLOW,0x051fecb4,0x051fecb8)
-        sdbgen.commit_transaction()
         sdbgen.fill_lines_fts()
         sdbgen.close()
 
     def test_add_function(self):
         sdbgen = SDBGen(':memory:')
 
-        sdbgen.begin_transaction()
         sdbgen.add_line(0x051FECB4, LineTypes.CODE,'li r25,0','\x3B\x20\x00\x00')
         sdbgen.add_line(0x051FECB8, LineTypes.CODE,
                 'addi r24, r1, 0x40+var_28','\x3B\x01\x00\x18')
         sdbgen.add_function(0x051fecb4,'my_func',[0x051fecb4,0x051fecb8])
-        sdbgen.commit_transaction()
         sdbgen.fill_lines_fts()
         sdbgen.close()
 

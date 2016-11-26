@@ -81,7 +81,6 @@ def index_idb(sdb_path):
     """
     sdbgen = SDBGen(sdb_path)
 
-    sdbgen.begin_transaction()
     # Index all lines:
     for line_addr in iter_lines():
         # Get line attributes:
@@ -99,9 +98,7 @@ def index_idb(sdb_path):
         sdbgen.add_line(line_addr,line_type,line_text,line_data)
 
 
-    sdbgen.commit_transaction()
             
-    sdbgen.begin_transaction()
     # Index all xrefs:
     for line_addr in iter_lines():
         if is_line_code(line_addr):
@@ -146,9 +143,7 @@ def index_idb(sdb_path):
                 else:
                     sdbgen.add_xref(XrefTypes.DATA_TO_DATA,line_addr,dref)
 
-    sdbgen.commit_transaction()
 
-    sdbgen.begin_transaction()
     # Index all functions:
     for func_addr in idautils.Functions():
         # We skip chunked functions:
@@ -168,7 +163,6 @@ def index_idb(sdb_path):
         func_name = idc.GetFunctionName(func_addr)
         sdbgen.add_function(func_addr,func_name,line_addresses)
 
-    sdbgen.commit_transaction()
 
 
     sdbgen.fill_lines_fts()

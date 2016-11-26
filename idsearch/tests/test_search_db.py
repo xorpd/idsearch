@@ -14,7 +14,6 @@ def fill_sdb(sdb_path):
     Fill the database with some example rows.
     """
     sdbgen = SDBGen(sdb_path)
-    sdbgen.begin_transaction()
     sdbgen.add_line(0x051FECB4, LineTypes.CODE,'li r25,0','\x3B\x20\x00\x00')
     sdbgen.add_line(0x051FECB8, LineTypes.CODE,
             'addi r24, r1, 0x40+var_28','\x3B\x01\x00\x18')
@@ -25,7 +24,6 @@ def fill_sdb(sdb_path):
 
     sdbgen.add_xref(XrefTypes.CODE_FLOW,0x051fecb4,0x051fecb8)
     sdbgen.add_function(0x051fecb4,'my_func',[0x051fecb4,0x051fecb8])
-    sdbgen.commit_transaction()
     sdbgen.fill_lines_fts()
     sdbgen.close()
 
@@ -194,12 +192,10 @@ class TestSearchFTS(unittest.TestCase):
 
         # Fill in sdb:
         sdbgen = SDBGen(my_sdb_path)
-        sdbgen.begin_transaction()
         sdbgen.add_line(0x051FECB4, LineTypes.CODE,'Hello there','\x3B\x20\x00\x00')
         sdbgen.add_line(0x051FECB8, LineTypes.CODE,'I am a line','\x3B\x20\x00\x00')
         sdbgen.add_line(0x051FECBC, LineTypes.CODE,'I am another line','\x3B\x20\x00\x00')
         sdbgen.add_line(0x051FECC0, LineTypes.CODE,'I am the next line','\x3B\x20\x00\x00')
-        sdbgen.commit_transaction()
         sdbgen.fill_lines_fts()
         sdbgen.close()
 
