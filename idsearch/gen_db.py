@@ -217,7 +217,7 @@ class SDBGen(object):
             address, line_text_hex FROM lines""")
 
         rows = self._conn.execute(
-            """SELECT address,line_text_hex FROM lines""").fetchall()
+            """SELECT address,line_text_hex FROM lines""")
 
         # Converting all hexified line text back to the real text, to allow
         # quick token based fts search:
